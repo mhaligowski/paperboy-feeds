@@ -1,0 +1,8 @@
+runtime: go
+api_version: go1
+service: feeds
+handlers:
+    - url: /feeds
+      script: _go_app
+
+
