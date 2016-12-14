@@ -4,5 +4,7 @@ service: feeds
 handlers:
     - url: /feeds
       script: _go_app
+    - url: /feeds/(.*)
+      script: _go_app
 
 

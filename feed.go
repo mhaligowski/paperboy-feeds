@@ -14,18 +14,18 @@ type Feed struct {
 }
 
 type feedsFetcher interface {
-	Get(context.Context, string) (Feed, error)
+	Get(context.Context, string) (*Feed, error)
 	GetAll(context.Context) ([]Feed, error)
 }
 
 type feedsPutter interface {
-	Put(context.Context, Feed) error
+	Put(context.Context, *Feed) error
 }
 
 type datastoreFeedsDao struct {
 }
 
-func (d *datastoreFeedsDao) Get(ctx context.Context, id string) (*Feed, error) {
+func (d datastoreFeedsDao) Get(ctx context.Context, id string) (*Feed, error) {
 	result := &Feed{}
 	key := datastore.NewKey(ctx, "Feed", id, 0, nil)
 
@@ -37,7 +37,7 @@ func (d *datastoreFeedsDao) Get(ctx context.Context, id string) (*Feed, error) {
 	return result, nil
 }
 
-func (d *datastoreFeedsDao) GetAll(ctx context.Context) ([]Feed, error) {
+func (d datastoreFeedsDao) GetAll(ctx context.Context) ([]Feed, error) {
 	var result []Feed
 
 	q := datastore.NewQuery("Feed")
@@ -45,10 +45,14 @@ func (d *datastoreFeedsDao) GetAll(ctx context.Context) ([]Feed, error) {
 		return nil, err
 	}
 
-	return result, nil
+	if result == nil {
+		return make([]Feed, 0), nil
+	} else {
+		return result, nil
+	}
 }
 
-func (d *datastoreFeedsDao) Put(ctx context.Context, f *Feed) error {
+func (d datastoreFeedsDao) Put(ctx context.Context, f *Feed) error {
 	f.FeedId = id(f)
 	k := datastore.NewKey(ctx, "Feed", f.FeedId, 0, nil)
 
