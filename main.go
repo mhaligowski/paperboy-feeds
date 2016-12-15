@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func init() {
+func Run() {
 	dao := datastoreFeedsDao{}
 	router := mux.NewRouter()
 
