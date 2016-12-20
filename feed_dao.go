@@ -48,14 +48,14 @@ func (d datastoreFeedsDao) GetAll(ctx context.Context) ([]Feed, error) {
 }
 
 func (d datastoreFeedsDao) Put(ctx context.Context, f *Feed) error {
-	f.FeedId = id(f)
+	f.FeedId = setId(f)
 	k := datastore.NewKey(ctx, "Feed", f.FeedId, 0, nil)
 
 	_, err := datastore.Put(ctx, k, f)
 	return err
 }
 
-func id(f *Feed) string {
+func setId(f *Feed) string {
 	b := sha256.New()
 	b.Write([]byte(f.Url))
 

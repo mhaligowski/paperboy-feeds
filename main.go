@@ -3,6 +3,7 @@ package feeds
 import (
 	"github.com/gorilla/mux"
 	"net/http"
+	"github.com/rs/cors"
 )
 
 func Run() {
@@ -13,7 +14,11 @@ func Run() {
 		Methods(http.MethodGet)
 
 	router.Handle("/feeds/{feedId}", getFeedHandler{dao}).Methods(http.MethodGet)
-	router.Handle("/feeds", handlePostFeed{dao}).Methods(http.MethodPost)
+	router.Handle("/feeds", handlePostJsonFeed{dao}).
+		Methods(http.MethodPost).
+		Headers("Content-Type", "application/json")
+	router.Handle("/feeds", handlePostFormFeed{dao, dao}).
+		Methods(http.MethodPost)
 
-	http.Handle("/", router)
+	http.Handle("/", cors.Default().Handler(router))
 }
