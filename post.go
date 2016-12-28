@@ -9,7 +9,6 @@ import (
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/urlfetch"
 	"google.golang.org/appengine/datastore"
-	"fmt"
 )
 
 type handlePostJsonFeed struct {
@@ -71,7 +70,6 @@ func (h handlePostFormFeed) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusConflict)
 		return
 	} else if err != datastore.ErrNoSuchEntity {
-		fmt.Fprintln(w, "Here")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
