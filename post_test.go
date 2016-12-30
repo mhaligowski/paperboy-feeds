@@ -40,7 +40,7 @@ func mockFetch(context.Context, string) (*Feed, error) {
 	}, nil
 }
 
-func TestReturns303WhenFeedIsCreated(t *testing.T) {
+func TestReturns303WhenFeedIsNotCreated(t *testing.T) {
 	body := `{
 		"Url": "http://wiadomosci.wp.pl/kat,1329,ver,rss,rss.xml"
 	}`
@@ -59,6 +59,53 @@ func TestReturns303WhenFeedIsCreated(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusSeeOther {
+		t.Errorf("handler returned wrong status, got %v want %v, message: %v",
+			status, http.StatusSeeOther, rr.Body.String())
+	}
+}
+
+func TestReturns303WhenFeedIsCreated(t *testing.T) {
+	body := `{
+		"Url": "http://wiadomosci.wp.pl/kat,1329,ver,rss,rss.xml"
+	}`
+
+	dao := newMockFetcher(nil)
+	req, err := http.NewRequest("POST", "/feeds/123", strings.NewReader(body))
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := postHttpHandler{newContext, mockFetch, dao}
+
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusSeeOther {
+		t.Errorf("handler returned wrong status, got %v want %v, message: %v",
+			status, http.StatusSeeOther, rr.Body.String())
+	}
+}
+
+func TestReturns400WhenInvalidInput(t *testing.T) {
+	body := `{
+		invalid: "http://wiadomosci.wp.pl/kat,1329,ver,rss,rss.xml"
+	}`
+
+	someFeed := &Feed{FeedId: "123"}
+	dao := newMockFetcher(someFeed)
+	req, err := http.NewRequest("POST", "/feeds/123", strings.NewReader(body))
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := postHttpHandler{nil, nil, dao}
+
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusBadRequest {
 		t.Errorf("handler returned wrong status, got %v want %v, message: %v",
 			status, http.StatusSeeOther, rr.Body.String())
 	}

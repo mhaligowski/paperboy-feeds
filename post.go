@@ -13,8 +13,6 @@ type postHttpHandler struct {
 }
 
 func (h postHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ctx := h.getContext(r)
-
 	f := &Feed{}
 	err := json.NewDecoder(r.Body).Decode(f)
 
@@ -22,8 +20,9 @@ func (h postHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	// TODO sanitize url
 
+	// TODO sanitize url
+	ctx := h.getContext(r)
 	newFeed, err := h.fetchRss(ctx, f.Url)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -31,12 +30,12 @@ func (h postHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	feedId := setId(newFeed)
-	_, err = h.feedsDao.Get(ctx, feedId)
-	if err == nil {
+	newFeed, err = h.feedsDao.Get(ctx, feedId)
+	if newFeed != nil && err == nil {
 		w.Header().Add("Location", "")
 		w.WriteHeader(http.StatusSeeOther)
 		return
-	} else {
+	} else if newFeed == nil && err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
