@@ -17,6 +17,11 @@ type feedsPutter interface {
 	Put(context.Context, *Feed) error
 }
 
+type feedsDao interface {
+	feedsFetcher
+	feedsPutter
+}
+
 type datastoreFeedsDao struct {
 }
 
