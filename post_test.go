@@ -8,7 +8,6 @@ import (
 	"golang.org/x/net/context"
 )
 
-
 type mockDao struct {
 	f *Feed
 }
@@ -26,6 +25,7 @@ func (m *mockDao) GetAll(ctx context.Context) ([]Feed, error) {
 }
 
 func (m *mockDao) Put(ctx context.Context, f *Feed) error {
+	f.FeedId = "123"
 	return nil
 }
 
@@ -47,7 +47,7 @@ func TestReturns303WhenFeedIsNotCreated(t *testing.T) {
 
 	someFeed := &Feed{FeedId: "123"}
 	dao := newMockFetcher(someFeed)
-	req, err := http.NewRequest("POST", "/feeds/123", strings.NewReader(body))
+	req, err := http.NewRequest("POST", "http://localhost:8080/feeds", strings.NewReader(body))
 
 	if err != nil {
 		t.Fatal(err)
@@ -62,6 +62,14 @@ func TestReturns303WhenFeedIsNotCreated(t *testing.T) {
 		t.Errorf("handler returned wrong status, got %v want %v, message: %v",
 			status, http.StatusSeeOther, rr.Body.String())
 	}
+
+	expectedLocation := "http://localhost:8080/feeds/123"
+	if location := rr.Header().Get("Location");
+		location != expectedLocation {
+		t.Errorf("handler returned wrong location header, got %v want %v",
+			location, expectedLocation)
+	}
+
 }
 
 func TestReturns303WhenFeedIsCreated(t *testing.T) {
@@ -70,7 +78,7 @@ func TestReturns303WhenFeedIsCreated(t *testing.T) {
 	}`
 
 	dao := newMockFetcher(nil)
-	req, err := http.NewRequest("POST", "/feeds/123", strings.NewReader(body))
+	req, err := http.NewRequest("POST", "http://localhost:8080/feeds", strings.NewReader(body))
 
 	if err != nil {
 		t.Fatal(err)
@@ -84,6 +92,13 @@ func TestReturns303WhenFeedIsCreated(t *testing.T) {
 	if status := rr.Code; status != http.StatusSeeOther {
 		t.Errorf("handler returned wrong status, got %v want %v, message: %v",
 			status, http.StatusSeeOther, rr.Body.String())
+	}
+
+	expectedLocation := "http://localhost:8080/feeds/123"
+	if location := rr.Header().Get("Location");
+		location != expectedLocation {
+		t.Errorf("handler returned wrong location header, got %v want %v",
+			location, expectedLocation)
 	}
 }
 
@@ -94,7 +109,7 @@ func TestReturns400WhenInvalidInput(t *testing.T) {
 
 	someFeed := &Feed{FeedId: "123"}
 	dao := newMockFetcher(someFeed)
-	req, err := http.NewRequest("POST", "/feeds/123", strings.NewReader(body))
+	req, err := http.NewRequest("POST", "http://localhost:8080/feeds", strings.NewReader(body))
 
 	if err != nil {
 		t.Fatal(err)
@@ -109,4 +124,5 @@ func TestReturns400WhenInvalidInput(t *testing.T) {
 		t.Errorf("handler returned wrong status, got %v want %v, message: %v",
 			status, http.StatusSeeOther, rr.Body.String())
 	}
+
 }

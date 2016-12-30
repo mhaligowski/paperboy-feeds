@@ -30,9 +30,9 @@ func (h postHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	feedId := setId(newFeed)
-	newFeed, err = h.feedsDao.Get(ctx, feedId)
-	if newFeed != nil && err == nil {
-		w.Header().Add("Location", "")
+	oldFeed, err := h.feedsDao.Get(ctx, feedId)
+	if oldFeed != nil && err == nil {
+		w.Header().Add("Location", getFeedPath(r.URL, oldFeed.FeedId))
 		w.WriteHeader(http.StatusSeeOther)
 		return
 	} else if newFeed == nil && err != nil {
@@ -46,5 +46,6 @@ func (h postHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Add("Location", getFeedPath(r.URL, newFeed.FeedId))
 	w.WriteHeader(http.StatusSeeOther)
 }
