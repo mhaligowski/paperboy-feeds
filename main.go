@@ -13,19 +13,20 @@ func Run() {
 	router := mux.NewRouter()
 
 	corsHandler := cors.New(cors.Options{
-		AllowedHeaders:{"Location"},
+		AllowedHeaders:[]string{"Location"},
 	})
-	router.Handle("/feeds", corsHandler(getFeedsHandler{dao})).
+
+	router.Handle("/feeds", corsHandler.Handler(getFeedsHandler{dao})).
 		Methods(http.MethodGet)
 
-	getHandler := corsHandler(getFeedHandler{dao})
+	getHandler := corsHandler.Handler(getFeedHandler{dao})
 	router.Handle("/feeds/{feedId}", getHandler).
 		Methods(http.MethodGet)
 
-	postHandler := corsHandler(postHttpHandler{appengine.NewContext, fetchRssWithUrlFetch, dao})
+	postHandler := corsHandler.Handler(postHttpHandler{appengine.NewContext, fetchRssWithUrlFetch, dao})
 	router.Handle("/feeds", postHandler).
 		Methods(http.MethodPost).
 		Headers("Content-Type", "application/json")
 
-	http.Handle("/", corsHandler(router))
+	http.Handle("/", corsHandler.Handler(router))
 }
