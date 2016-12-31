@@ -25,7 +25,7 @@ func (h postHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := h.getContext(r)
 	newFeed, err := h.fetchRss(ctx, f.Url)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -33,7 +33,8 @@ func (h postHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	oldFeed, err := h.feedsDao.Get(ctx, feedId)
 	if oldFeed != nil && err == nil {
 		w.Header().Add("Location", getFeedPath(r.URL, oldFeed.FeedId))
-		w.WriteHeader(http.StatusSeeOther)
+		// because fuck you, fetch and cors
+		w.WriteHeader(http.StatusOK)
 		return
 	} else if newFeed == nil && err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -47,5 +48,5 @@ func (h postHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Add("Location", getFeedPath(r.URL, newFeed.FeedId))
-	w.WriteHeader(http.StatusSeeOther)
+	w.WriteHeader(http.StatusCreated)
 }

@@ -40,7 +40,7 @@ func mockFetch(context.Context, string) (*Feed, error) {
 	}, nil
 }
 
-func TestReturns303WhenFeedIsNotCreated(t *testing.T) {
+func TestReturns200WhenFeedIsNotCreated(t *testing.T) {
 	body := `{
 		"Url": "http://wiadomosci.wp.pl/kat,1329,ver,rss,rss.xml"
 	}`
@@ -58,9 +58,9 @@ func TestReturns303WhenFeedIsNotCreated(t *testing.T) {
 
 	handler.ServeHTTP(rr, req)
 
-	if status := rr.Code; status != http.StatusSeeOther {
+	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status, got %v want %v, message: %v",
-			status, http.StatusSeeOther, rr.Body.String())
+			status, http.StatusOK, rr.Body.String())
 	}
 
 	expectedLocation := "http://localhost:8080/feeds/123"
@@ -72,7 +72,7 @@ func TestReturns303WhenFeedIsNotCreated(t *testing.T) {
 
 }
 
-func TestReturns303WhenFeedIsCreated(t *testing.T) {
+func TestReturns201WhenFeedIsCreated(t *testing.T) {
 	body := `{
 		"Url": "http://wiadomosci.wp.pl/kat,1329,ver,rss,rss.xml"
 	}`
@@ -89,9 +89,9 @@ func TestReturns303WhenFeedIsCreated(t *testing.T) {
 
 	handler.ServeHTTP(rr, req)
 
-	if status := rr.Code; status != http.StatusSeeOther {
+	if status := rr.Code; status != http.StatusCreated {
 		t.Errorf("handler returned wrong status, got %v want %v, message: %v",
-			status, http.StatusSeeOther, rr.Body.String())
+			status, http.StatusCreated, rr.Body.String())
 	}
 
 	expectedLocation := "http://localhost:8080/feeds/123"
